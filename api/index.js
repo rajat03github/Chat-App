@@ -1,4 +1,5 @@
-//Server-Side to communicate
+//!Server-Side to communicate
+
 const mongoose = require("mongoose");
 const express = require("express");
 const User = require("./models/User");
@@ -13,11 +14,12 @@ const bcryptSalt = bcrypt.genSaltSync(10);
 
 const app = express(); //After adding Express = now we can define the app
 
-// For Info of .env for MongoDB-URL and JWT
+//! For Info of .env for MongoDB-URL and JWT
 const dotenv = require("dotenv");
 dotenv.config();
 
-// Get User ID with TOken
+//! Get User ID with TOken
+
 async function getUserDatafromReq(req) {
   return new Promise((resolve, reject) => {
     const token = req.cookies?.token;
@@ -31,10 +33,10 @@ async function getUserDatafromReq(req) {
     }
   });
 }
-// making Upload directory to use in THe Database
+//* making Upload directory to use in THe Database
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
-// CORS---
+// !CORS---
 app.use(
   cors({
     credentials: true,
@@ -44,28 +46,30 @@ app.use(
 
 app.use(express.json());
 
-// yarn add jsonwebtoken - security
+//* yarn add jsonwebtoken - security
 const jwt = require("jsonwebtoken"); //For Auth
 const cookieParser = require("cookie-parser");
 const jwtSecret = process.env.JWT_SECRET;
 
-// Connecting To DataBase
+//! Connecting To DataBase
 mongoose.connect(process.env.MONGO_URL, (err) => {
   if (err) throw err;
 }); //connected With DataBase
 
-// EndPoints-
-// Creating User
+// !EndPoints-
+
+// *Creating User
 app.post("/register", async (req, res) => {
   const { username, password } = req.body; // Grab The Input Data
   try {
-    // hashing Password
+    //* hashing Password
     const hashedPassword = bcrypt.hashSync(password, bcryptSalt);
     const createdUser = await User.create({
       username: username,
       password: hashedPassword,
     }); //Create The Entry in DB
-    //  Authentication Of User-_id will give ID of User from MongoDB
+
+    //* Authentication Of User-_id will give ID of User from MongoDB
 
     jwt.sign(
       { userId: createdUser._id, username },
@@ -87,7 +91,8 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// To authorize Cookies
+// *To authorize Cookies
+
 app.use(cookieParser());
 
 app.get("/profile", (req, res) => {
@@ -102,7 +107,8 @@ app.get("/profile", (req, res) => {
   }
 });
 
-// Login
+//* Login
+
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   const foundUser = await User.findOne({ username });
@@ -123,7 +129,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// storing Messages
+//* storing Messages
 app.get("/messages/:userId", async (req, res) => {
   const { userId } = req.params; //userID
   const userData = await getUserDatafromReq(req);
@@ -138,27 +144,28 @@ app.get("/messages/:userId", async (req, res) => {
   res.json(messages);
 });
 
-// Online People -
+//* Online People -
 app.get("/people", async (req, res) => {
   const users = await User.find({}, { _id: 1, username: 1 });
   res.json(users);
 });
 
-// LoggingOut -
+//*LoggingOut -
 app.post("/signout", (req, res) => {
   res.cookie("token", "", { sameSite: "none", secure: true }).json("ok");
 });
 
-// Server---
+//!Server---
 const server = app.listen(5000); //PORT-5000
 // http://localhost:5000/test run this in new Tab after using Nodemon
-// // Testing
+
+//*Testing
 app.get("/test", (req, res) => {
   res.json("test oKay");
 });
 
-// Web-Socket Server ---
-// ws- is just library , wss- is server
+//!Web-Socket Server ---
+//?ws- is just library , wss- is server
 
 const wss = new ws.WebSocketServer({ server });
 wss.on("connection", (connection, req) => {
@@ -186,14 +193,15 @@ wss.on("connection", (connection, req) => {
     }, 1000);
   }, 5000);
 
-  // Callback for pong
+  //*Callback for pong
   connection.on("pong", () => {
     clearTimeout(connection.deathTimer);
   });
 
-  // to see active connections
+  //!to see active connections
 
-  // Read username and Id from the cookie for this coonection
+  //?Read username and Id from the cookie for this coonection
+
   const cookies = req.headers.cookie;
   if (cookies) {
     const tokenCookieString = cookies
@@ -222,7 +230,7 @@ wss.on("connection", (connection, req) => {
 
       let filename = null;
 
-      // ATTACHMENTS--
+      //!ATTACHMENTS--
       //file is for attachments
       if (file) {
         // Extracting parts from"." and taking only last extension ex- png
@@ -266,7 +274,7 @@ wss.on("connection", (connection, req) => {
       }
     });
   }
-  // notify everyone about Online Connected People
+  //! notify everyone about Online Connected People
   //this object of clients will transform into array
   [...wss.clients].forEach((client) => {
     client.send(

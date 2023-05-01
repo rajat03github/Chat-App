@@ -14,8 +14,9 @@ export default function Avatar({ userId, username, online }) {
     "bg-yellow-200",
   ];
   // console.log(userId);
-  //   Changing the Id in Base10
+  // ?  Changing the Id in Base10
   const userIdBase10 = parseInt(userId, 16);
+
   //   ifUseriD = 15 % 6 = 3(third colour will be chosen);
   const colorIndex = userIdBase10 % colors.length;
   const color = colors[colorIndex];
